@@ -34,17 +34,16 @@ def Falar(texto):
         time.sleep(0.1)
 
     # Remove o arquivo após a reprodução
-    #os.remove(arquivo_audio)
+   # os.remove(arquivo_audio)
 
-def executa_comando():
+def executa_comando(source):
     """Reconhece o comando de voz do usuário."""
     try:
-        with sr.Microphone() as source:
-            audio.adjust_for_ambient_noise(source)  # Ajusta para o ruído ambiente
-            Falar("Estou ouvindo")
-            voz = audio.listen(source)
-            comando = audio.recognize_google(voz, language='pt-BR')
-            return comando.lower()  # Retorna o comando em minúsculas
+        audio.adjust_for_ambient_noise(source)  # Ajusta para o ruído ambiente
+        Falar("Estou ouvindo")
+        voz = audio.listen(source)
+        comando = audio.recognize_google(voz, language='pt-BR')
+        return comando.lower()  # Retorna o comando em minúsculas
     except sr.UnknownValueError:
         print("Não consegui entender o áudio.")
         Falar("Desculpe, não consegui entender o que você disse.")
@@ -61,66 +60,67 @@ def executa_comando():
 def comando_voz_usuario():
     """Processa os comandos de voz do usuário."""
     global silencio
-    while True:
-        comando = executa_comando()
-        if comando:
-            if 'luna' in comando:  
-                comando = comando.replace('luna', '').strip()
-                
-                if 'o que você pode fazer' in comando:
-                    Falar('Eu posso falar as horas e fazer pesquisas na Wikipédia.')
-                
-                elif 'horas são' in comando:
-                    horas = datetime.datetime.now().strftime('%H:%M')
-                    Falar("Agora são " + horas)
-                    silencio = True
-                elif 'me diga sobre' in comando or 'me fale sobre' in comando:
-                    if 'me diga sobre' in comando:
-                        sobre = comando.replace('me diga sobre', '').strip()
-                    else:
-                        sobre = comando.replace('me fale sobre', '').strip()
+    with sr.Microphone() as source:
+        while True:
+            comando = executa_comando(source)
+            if comando:
+                if 'luna' in comando:  
+                    comando = comando.replace('luna', '').strip()
+                    
+                    if 'o que você pode fazer' in comando:
+                        Falar('Eu posso falar as horas e fazer pesquisas na Wikipédia.')
+                    
+                    elif 'horas são' in comando:
+                        horas = datetime.datetime.now().strftime('%H:%M')
+                        Falar("Agora são " + horas)
+                        silencio = True               
+                    elif 'me diga sobre' in comando or 'me fale sobre' in comando:
+                        if 'me diga sobre' in comando:
+                            sobre = comando.replace('me diga sobre', '').strip()
+                        else:
+                            sobre = comando.replace('me fale sobre', '').strip()
 
-                    wikipedia.set_lang('pt')
-                    try:
-                        Falar("Procurando sobre " + sobre)
-                        resposta = wikipedia.summary(sobre, sentences=2)
-                        Falar(resposta)
+                        wikipedia.set_lang('pt')
+                        try:
+                            Falar("Procurando sobre " + sobre)
+                            resposta = wikipedia.summary(sobre, sentences=2)
+                            Falar(resposta)
+                            silencio = True 
+                        
+                        except wikipedia.exceptions.DisambiguationError:
+                            Falar("A pesquisa retornou múltiplas opções. Por favor, seja mais específico.")
+                    
+                    elif 'youtube' in comando:
+                        Falar('Sim, senhor. Abrindo YouTube agora...')
+                        webbrowser.open('https://www.youtube.com')
+                        silencio = True 
+                        
+                    elif 'toque' in comando:
+                        toque = comando.replace('toque', '').strip()
+                        Falar('Tocando ' + toque)
+                        kit.playonyt(toque)
+                        silencio = True 
+                    
+                    elif 'procure por' in comando:
+                        pesquisa = comando.replace('procure por', '').strip()
+                        Falar('Procurando no Google por ' + pesquisa)
+                        kit.search(pesquisa)
+                        silencio = True 
+                    
+                    elif 'sair' in comando or 'encerrar' in comando:
+                        Falar("Encerrando o assistente. Até logo!")
+                        break  
+                    
+                    elif 'pare de falar' in comando or 'silêncio' in comando:
                         silencio = True
+                        Falar("Entrando em modo silencioso.")
                     
-                    except wikipedia.exceptions.DisambiguationError:
-                        Falar("A pesquisa retornou múltiplas opções. Por favor, seja mais específico.")
-                 
-                elif 'youtube' in comando:
-                    Falar('Sim, senhor. Abrindo YouTube agora...')
-                    webbrowser.open('youtube.com')
-                    silencio =True
+                    elif 'volte a falar' in comando or 'fim do silêncio' in comando:
+                        silencio = False
+                        Falar("Saindo do modo silencioso.")
                     
-                elif 'toque' in comando:
-                    toque = comando.replace('toque', '').strip()
-                    Falar('Tocando ' + toque)
-                    kit.playonyt(toque)
-                    silencio = True
-                
-                elif 'procure por' in comando:
-                    pesquisa = comando.replace('procure por', '').strip()
-                    Falar('Procurando no Google por ' + pesquisa)
-                    kit.search(pesquisa)
-                    silencio = True
-                
-                elif 'sair' in comando or 'encerrar' in comando:
-                    Falar("Encerrando o assistente. Até logo!")
-                    break  
-                
-                elif 'pare de falar' in comando or 'silêncio' in comando:
-                    silencio = True
-                    Falar("Entrando em modo silencioso.")
-                
-                elif 'volte a falar' in comando or 'fim do silêncio' in comando:
-                    silencio = False
-                    Falar("Saindo do modo silencioso.")
-                
-            else:
-                Falar("Você não chamou pelo nome Luna.")
+                else:
+                    Falar("Você não chamou pelo nome Luna.")
 
 if __name__ == "__main__":
     comando_voz_usuario()
