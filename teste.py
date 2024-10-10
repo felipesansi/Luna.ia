@@ -7,15 +7,18 @@ import pygame
 import time
 import webbrowser
 import pywhatkit as kit
-
-
+import threading
 
 # Inicializa o reconhecedor de voz e o mixer do pygame
 audio = sr.Recognizer()
 pygame.mixer.init()
 
+# Variável global para controle da fala
+interromper_fala = threading.Event()
+
 def Falar(texto):
     """Converte texto em fala usando gTTS e reproduz o áudio gerado."""
+    global interromper_fala
     print(texto)  # Para visualizar o que está sendo dito
     arquivo_audio = f"resposta_{int(time.time())}.mp3"  # Nome único baseado no timestamp
 
@@ -27,10 +30,13 @@ def Falar(texto):
     
     # Aguardar até a reprodução terminar
     while pygame.mixer.music.get_busy():
+        if interromper_fala.is_set():
+            pygame.mixer.music.stop()
+            break
         time.sleep(0.1)
 
     # Remove o arquivo após a reprodução
- #   os.remove(arquivo_audio)
+  #  os.remove(arquivo_audio)
 
 def executa_comando():
     """Reconhece o comando de voz do usuário."""
@@ -54,12 +60,12 @@ def executa_comando():
         Falar("Ocorreu um erro inesperado.")
         return None
 
-def comando_voz_usuario():
-    """Processa os comandos de voz do usuário."""
+def monitorar_comandos():
+    global interromper_fala
     while True:
         comando = executa_comando()
         if comando:
-            if 'luna' in comando:  
+            if 'luna' in comando:
                 comando = comando.replace('luna', '').strip()
                 
                 if 'o que você pode fazer' in comando:
@@ -77,7 +83,7 @@ def comando_voz_usuario():
 
                     wikipedia.set_lang('pt')
                     try:
-                        Falar("Procurando sobre "+sobre)
+                        Falar("Procurando sobre " + sobre)
                         resposta = wikipedia.summary(sobre, sentences=2)
                         Falar(resposta)
                     
@@ -85,26 +91,40 @@ def comando_voz_usuario():
                         Falar("A pesquisa retornou múltiplas opções. Por favor, seja mais específico.")
                  
                 elif 'youtube' in comando:
-                    Falar('sim,senhor abrindo youtube agora...')
+                    Falar('Sim, senhor. Abrindo YouTube agora...')
                     webbrowser.open('youtube.com')
                     
                 elif 'toque' in comando:
-                    toque  = comando.replace('toque', '').strip()
-                    Falar('tocando '+ toque )
+                    toque = comando.replace('toque', '').strip()
+                    Falar('Tocando ' + toque)
                     kit.playonyt(toque)
                 
                 elif 'procure por' in comando:
-                    pesquisa  = comando.replace('procure por', '').strip()
-                    Falar('Procurando no google por '+ pesquisa)
+                    pesquisa = comando.replace('procure por', '').strip()
+                    Falar('Procurando no Google por ' + pesquisa)
                     kit.search(pesquisa)
-
-                    
+                
                 elif 'sair' in comando or 'encerrar' in comando:
                     Falar("Encerrando o assistente. Até logo!")
                     break  
 
+                elif 'pare de falar' in comando or 'pare' in comando:
+                    interromper_fala.set()
+                    Falar('Parando de falar.')
+                    interromper_fala.clear()
+
             else:
                 Falar("Você não chamou pelo nome Luna.")
+
+def comando_voz_usuario():
+    """Inicia a thread para monitorar comandos e mantém o programa rodando."""
+    thread_comandos = threading.Thread(target=monitorar_comandos)
+    thread_comandos.daemon = True
+    thread_comandos.start()
+
+    # Loop principal que mantém o programa rodando
+    while True:
+        time.sleep(1)
 
 if __name__ == "__main__":
     comando_voz_usuario()
