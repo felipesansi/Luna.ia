@@ -7,16 +7,19 @@ import pygame
 import time
 import webbrowser
 import pywhatkit as kit
+import pyowm
 
 # Inicializa o reconhecedor de voz e o mixer do pygame
 audio = sr.Recognizer()
 pygame.mixer.init()
 
-# Variável global para controle de silêncio
+
+owm= pyowm.OWM('166936b11d98f4fc3e044f70dd6fa985')
+mgr = owm.weather_manager()
 silencio = False
 
 def Falar(texto):
-    """Converte texto em fala usando gTTS e reproduz o áudio gerado."""
+  #  Converte texto em fala usando gTTS e reproduz o áudio gerado.
     global silencio
     if silencio:
         return
@@ -100,6 +103,22 @@ def comando_voz_usuario():
                         Falar('Tocando ' + toque)
                         kit.playonyt(toque)
                         silencio = True 
+
+                    elif 'qual a temperatura em' in comando:
+                        cidade = comando.replace('qual a temperatura em', '').strip()
+                        Falar('Obtendo informções do clima em ' + cidade)
+                       
+                        try:
+                         
+                           observacao = mgr.weather_at_place(cidade)
+                           clima = observacao.weather
+                           temperatura = clima.temperature('celsius')['temp']
+                           descricao = clima.detailed_status
+                           Falar(f'Em {cidade} a temperatura é {temperatura:.1f}°C e o tempo está {descricao}.')
+                           silencio = True
+                       
+                        except pyowm.commons.exceptions.NotFoundError:
+                          Falar(f"Não consegui encontrar informações climáticas para {cidade}.")
                     
                     elif 'procure por' in comando:
                         pesquisa = comando.replace('procure por', '').strip()
@@ -115,12 +134,12 @@ def comando_voz_usuario():
                         silencio = True
                         Falar("Entrando em modo silencioso.")
                     
-                    elif 'volte a falar' in comando or 'fim do silêncio' in comando:
+                    elif 'ei, luna' in comando or 'fim do silêncio' in comando:
                         silencio = False
                         Falar("Saindo do modo silencioso.")
                     
                 else:
-                    Falar("Você não chamou pelo nome Luna.")
+                    Falar("Você não chamou me pelo nome.")
 
 if __name__ == "__main__":
     comando_voz_usuario()
