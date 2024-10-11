@@ -1,26 +1,29 @@
-# README - Assistente de Voz Luna
+# # Assistente Virtual em Python
 
-## Descrição
-
-O Assistente de Voz Luna é um projeto de inteligência artificial que utiliza reconhecimento de voz para interagir com o usuário. Ele pode informar as horas atuais e realizar pesquisas na Wikipedia.
+Este projeto é um assistente virtual desenvolvido em Python que utiliza reconhecimento de voz e síntese de fala. O assistente pode responder a perguntas, fornecer informações sobre o clima, tocar músicas e executar pesquisas na Wikipédia e no Google.
 
 ## Funcionalidades
 
-- **Reconhecimento de Voz**: O assistente escuta e interpreta comandos de voz.
-- **Consulta de Hora**: O assistente informa a hora atual quando solicitado.
-- **Pesquisa na Wikipedia**: O assistente pode fornecer resumos de artigos da Wikipedia.
-- **Respostas Personalizadas**: O assistente responde a perguntas específicas sobre suas funcionalidades.
-
-## Tecnologias Utilizadas
-
-- `speech_recognition`: Para reconhecimento de voz.
-- `pyttsx3`: Para conversão de texto em fala.
-- `datetime`: Para manipulação de datas e horas.
-- `wikipedia`: Para acessar informações da Wikipedia.
+- **Reconhecimento de voz**: Escuta comandos dados pelo usuário.
+- **Síntese de fala**: Responde ao usuário com uma voz gerada por texto.
+- **Informações do clima**: Obtém a temperatura e a descrição do clima em uma cidade específica.
+- **Pesquisas na Wikipédia**: Realiza buscas e fornece resumos de artigos da Wikipédia.
+- **Abertura de sites**: Abre URLs específicas, como o YouTube.
+- **Toque de músicas**: Toca músicas do YouTube com base no comando do usuário.
+- **Modo silencioso**: Permite ao usuário silenciar o assistente temporariamente.
 
 ## Pré-requisitos
 
-Antes de executar o projeto, certifique-se de ter o Python instalado em sua máquina. Além disso, instale as seguintes bibliotecas:
+Antes de executar o assistente, verifique se você tem as seguintes bibliotecas instaladas:
+
+- `speech_recognition`
+- `gtts`
+- `pygame`
+- `wikipedia`
+- `pywhatkit`
+- `pyowm`
+
+Você pode instalá-las utilizando o seguinte comando:
 
 ```bash
-pip install SpeechRecognition pyttsx3 wikipedia pyAudio
+pip install speech_recognition gtts pygame wikipedia pywhatkit pyowm
