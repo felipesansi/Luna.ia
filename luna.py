@@ -9,6 +9,8 @@ import webbrowser
 import pywhatkit as kit
 import pyowm
 import threading
+import asyncio
+import json
 
 # Inicializa o reconhecedor de voz e o mixer do pygame
 audio = sr.Recognizer()
@@ -23,15 +25,15 @@ def Falar(texto):
     global silencio
     if silencio:
         return
-    print(texto)  # Para visualizar o que está sendo dito
-    arquivo_audio = f"resposta_{int(time.time())}.mp3"  # Nome único baseado no timestamp
+    print("Luna: " + texto)
+    arquivo_audio = "resposta.mp3"
 
     tts = gTTS(text=texto, lang='pt-br')
     tts.save(arquivo_audio)
-    
+
     pygame.mixer.music.load(arquivo_audio)
     pygame.mixer.music.play()
-    
+
     # Aguardar até a reprodução terminar
     while pygame.mixer.music.get_busy():
         time.sleep(0.05)  # Reduz o tempo de espera ativo
@@ -48,14 +50,14 @@ def Falar(texto):
         except Exception as e:
             print(f"Ocorreu um erro ao tentar remover o arquivo {arquivo_audio}: {e}")
 
-def reconhecer_comando():
-    """Reconhece o comando de voz do usuário."""
+def ouvir():
     with sr.Microphone() as source:
         try:
             audio.adjust_for_ambient_noise(source)  # Ajusta para o ruído ambiente
-            Falar("Estou ouvindo")
+            print("Estou ouvindo, fale algo")
             voz = audio.listen(source)
             comando = audio.recognize_google(voz, language='pt-BR')
+            print("O usuário disse: " + comando)
             return comando.lower()  # Retorna o comando em minúsculas
         except sr.UnknownValueError:
             print("Não consegui entender o áudio.")
@@ -70,8 +72,42 @@ def reconhecer_comando():
             Falar("Ocorreu um erro inesperado.")
             return None
 
+async def carregar_comandos(aquivo='comandos.json'):
+    try:
+        with open(aquivo, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print("Arquivo não encontrado.")
+        return {}
+    except json.JSONDecodeError:
+        print("Erro ao decodificar o JSON.")
+        return {}
+
+async def salvar_comandos(comandos, arquivo='comandos.json'):
+    with open(arquivo, 'w') as f:
+        json.dump(comandos, f, ensure_ascii=False, indent=4)
+
+async def ensinar_luna(pergunta, resposta):
+    comandos = await carregar_comandos()
+    comandos[pergunta] = resposta
+    await salvar_comandos(comandos)
+    Falar("Aprendi algo novo!")
+
+async def sites(url):
+    urls = {
+        "google": "https://www.google.com",
+        "instagram": "https://www.instagram.com",
+        "facebook": "https://www.facebook.com",
+        "spotify": "https://open.spotify.com/intl-pt",
+        "github": "https://www.github.com"
+    }
+    if url in urls:
+        Falar(f"Abrindo {url} agora...")
+        webbrowser.open(urls[url])
+    else:
+        Falar(f"Desculpe, não sei como abrir {url}.")
+
 def traduzir_clima(descricao):
-    """Traduz a descrição do clima do inglês para o português."""
     traducoes = {
         "clear sky": "céu limpo",
         "few clouds": "poucas nuvens",
@@ -86,11 +122,21 @@ def traduzir_clima(descricao):
     }
     return traducoes.get(descricao, descricao)
 
-def executar_comando(comando):
-    """Executa o comando de voz reconhecido."""
+async def executar_comando(comando):
     global silencio
-    if 'o que você pode fazer' in comando:
-        Falar('Eu posso falar as horas e fazer pesquisas na Wikipédia.')
+    comandos = await carregar_comandos()
+    if 'me ensine sobre' in comando:
+        partes = comando.replace('me ensine sobre', '').split('a resposta é')
+        if len(partes) == 2:
+            pergunta = partes[0].strip()
+            resposta = partes[1].strip()
+            await ensinar_luna(pergunta, resposta)
+        else:
+            Falar("Por favor, use o formato: me ensine sobre [pergunta], a resposta é [resposta]")
+    elif comando in comandos:
+        Falar(comandos[comando])
+    elif 'o que você pode fazer' in comando:
+        Falar('Eu posso falar as horas, fazer pesquisas na Wikipédia e Google, abrir sites como Google, Instagram, Facebook, Spotify e Github, além de reproduzir músicas.')
     elif 'horas são' in comando:
         horas = datetime.datetime.now().strftime('%H:%M')
         Falar("Agora são " + horas)
@@ -106,9 +152,9 @@ def executar_comando(comando):
             Falar(resposta)
         except wikipedia.exceptions.DisambiguationError:
             Falar("A pesquisa retornou múltiplas opções. Por favor, seja mais específico.")
-    elif 'youtube' in comando:
-        Falar('Sim, senhor. Abrindo YouTube agora...')
-        webbrowser.open('https://www.youtube.com')
+    elif 'abra o' in comando:
+        site = comando.replace('abra o', '').strip()
+        await sites(site)
     elif 'toque' in comando:
         toque = comando.replace('toque', '').strip()
         Falar('Tocando ' + toque)
@@ -134,22 +180,20 @@ def executar_comando(comando):
     elif 'pare de falar' in comando or 'silêncio' in comando:
         silencio = True
         Falar("Entrando em modo silencioso.")
- 
     elif 'luna' in comando or 'fim do silêncio' in comando:
         silencio = False
         Falar("Saindo do modo silencioso.")
     else:
-        Falar("Você não me chamou pelo nome.")
+        Falar("Comando não reconhecido.")
 
-def comando_voz_usuario():
-    """Processa os comandos de voz do usuário."""
+async def comando_voz_usuario():
     while True:
-        comando = reconhecer_comando()
+        comando = ouvir()
         if comando and 'luna' in comando:
             comando = comando.replace('luna', '').strip()
-            executar_comando(comando)
+            await executar_comando(comando)
         else:
             Falar("Você não me chamou pelo nome.")
 
 if __name__ == "__main__":
-    comando_voz_usuario()
+    asyncio.run(comando_voz_usuario())
