@@ -1,4 +1,4 @@
- # Assistente Virtual em Python
+# Assistente Virtual em Python
 
 Este projeto é um assistente virtual desenvolvido em Python que utiliza reconhecimento de voz e síntese de fala. O assistente pode responder a perguntas, fornecer informações sobre o clima, tocar músicas e executar pesquisas na Wikipédia e no Google.
 

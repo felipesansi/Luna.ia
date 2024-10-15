@@ -16,7 +16,7 @@ import json
 audio = sr.Recognizer()
 pygame.mixer.init()
 
-# Substitua pela sua chave de API do OpenWeatherMap
+
 owm = pyowm.OWM('166936b11d98f4fc3e044f70dd6fa985')
 mgr = owm.weather_manager()
 silencio = False
@@ -38,10 +38,10 @@ def Falar(texto):
     while pygame.mixer.music.get_busy():
         time.sleep(0.05)  # Reduz o tempo de espera ativo
 
-    # Certificar-se de que a música não está mais sendo reproduzida antes de remover
+    
     pygame.mixer.music.unload()
 
-    # Verificar se o arquivo existe antes de tentar removê-lo
+    
     if os.path.exists(arquivo_audio):
         try:
             os.remove(arquivo_audio)
