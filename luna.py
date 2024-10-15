@@ -72,9 +72,9 @@ def ouvir():
             Falar("Ocorreu um erro inesperado.")
             return None
 
-async def carregar_comandos(aquivo='comandos.json'):
+async def carregar_comandos(arquivo='comandos.json'):
     try:
-        with open(aquivo, 'r') as f:
+        with open(arquivo, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
         print("Arquivo não encontrado.")
@@ -125,6 +125,7 @@ def traduzir_clima(descricao):
 async def executar_comando(comando):
     global silencio
     comandos = await carregar_comandos()
+
     if 'me ensine sobre' in comando:
         partes = comando.replace('me ensine sobre', '').split('a resposta é')
         if len(partes) == 2:
@@ -141,10 +142,7 @@ async def executar_comando(comando):
         horas = datetime.datetime.now().strftime('%H:%M')
         Falar("Agora são " + horas)
     elif 'me diga sobre' in comando or 'me fale sobre' in comando:
-        if 'me diga sobre' in comando:
-            sobre = comando.replace('me diga sobre', '').strip()
-        else:
-            sobre = comando.replace('me fale sobre', '').strip()
+        sobre = comando.replace('me diga sobre', '').replace('me fale sobre', '').strip()
         wikipedia.set_lang('pt')
         try:
             Falar("Procurando sobre " + sobre)
@@ -180,9 +178,21 @@ async def executar_comando(comando):
     elif 'pare de falar' in comando or 'silêncio' in comando:
         silencio = True
         Falar("Entrando em modo silencioso.")
-    elif 'luna' in comando or 'fim do silêncio' in comando:
+    elif 'fim do silêncio' in comando:
         silencio = False
         Falar("Saindo do modo silencioso.")
+    elif 'desligar computador' in comando:
+        Falar('Seu computador será desligado em 30 segundos. Você pode cancelar o desligamento dizendo "cancelar desligamento".')
+        os.system("shutdown /s /t 30")  # Comando para desligar em 30 segundos
+    elif 'cancelar desligamento' in comando:
+        os.system("shutdown /a")  # Comando para abortar o desligamento
+        Falar("Desligamento cancelado.")
+    elif 'reiniciar computador' in comando:
+        Falar('Seu computador será reiniciado em 30 segundos. Você pode cancelar o reinício dizendo "cancelar reinício".')
+        os.system("shutdown /r /t 30")  # Comando para reiniciar em 30 segundos
+    elif 'cancelar reinício' in comando:
+        os.system("shutdown /a")  # Comando para abortar o reinício
+        Falar("Reinício cancelado.")
     else:
         Falar("Comando não reconhecido.")
 
@@ -195,5 +205,19 @@ async def comando_voz_usuario():
         else:
             Falar("Você não me chamou pelo nome.")
 
+async def modo_apresentacao():
+    Falar("Olá, eu sou a Luna, sua assistente virtual. Aqui está o que eu posso fazer:")
+    time.sleep(1)
+    Falar("Posso falar as horas, fazer pesquisas na Wikipédia e Google, abrir sites como Google, Instagram, Facebook, Spotify e Github, além de reproduzir músicas.")
+    time.sleep(1)
+    Falar("Para ouvir música diga toque nome do artista e música")
+    time.sleep(1)
+    Falar("Posso também informar a temperatura em qualquer cidade do mundo, além de aprender novos comandos que você me ensinar.")
+    time.sleep(1)
+    Falar("Para ativar um comando, basta dizer 'Luna' seguido do comando desejado.")
+    time.sleep(1)
+    Falar("Como posso te ajudar hoje?")
+
 if __name__ == "__main__":
+    asyncio.run(modo_apresentacao())
     asyncio.run(comando_voz_usuario())
