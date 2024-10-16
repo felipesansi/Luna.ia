@@ -38,10 +38,10 @@ pip install speech_recognition gtts pygame wikipedia-api pywhatkit pyowm request
 
 1. Obtenha suas chaves de API:
 
--Crie uma conta em OpenWeatherMap para obter a chave da API do clima.
+- Crie uma conta em OpenWeatherMap para obter a chave da API do clima.
 
 
--Crie uma conta em NewsAPI para obter a chave da API de notícias.
+- Crie uma conta em NewsAPI para obter a chave da API de notícias.
 
 
 
