@@ -32,21 +32,12 @@ Você pode instalar as bibliotecas necessárias com o seguinte comando:
 pip install speech_recognition gtts pygame wikipedia-api pywhatkit pyowm requests python-dotenv
 ```
 
-## configuração 
- 
+## Configuração
 
+1. **Obtenha suas chaves de API**:
 
-1. Obtenha suas chaves de API:
-
-- Crie uma conta em OpenWeatherMap para obter a chave da API do clima.
-
-
-- Crie uma conta em NewsAPI para obter a chave da API de notícias.
-
-
-
-2. Crie um arquivo .env na raiz do seu projeto com as seguintes variáveis:
-
+   - Crie uma conta em [OpenWeatherMap](https://openweathermap.org/) para obter a chave da API do clima.
+   - Crie uma conta em [NewsAPI](https://newsapi.org/) para obter a chave da API de notícias.
 ```bash
 senha_api_tempo=SEU_API_KEY_DO_CLIMA
 senha_api_news=SEU_API_KEY_DE_NOTÍCIAS
