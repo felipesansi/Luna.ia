@@ -12,6 +12,8 @@ import threading
 import asyncio
 import json
 from dotenv import load_dotenv
+import requests
+
 # Inicializa o reconhecedor de voz e o mixer do pygame
 audio = sr.Recognizer()
 pygame.mixer.init()
@@ -20,6 +22,8 @@ load_dotenv()
 senha_api = os.getenv('senha_api_tempo')
 owm = pyowm.OWM(senha_api)
 mgr = owm.weather_manager()
+senha_api_news = os.getenv('senha_api_news')
+
 silencio = False
 
 def Falar(texto):
@@ -39,10 +43,8 @@ def Falar(texto):
     while pygame.mixer.music.get_busy():
         time.sleep(0.05)  # Reduz o tempo de espera ativo
 
-    
     pygame.mixer.music.unload()
 
-    
     if os.path.exists(arquivo_audio):
         try:
             os.remove(arquivo_audio)
@@ -185,6 +187,13 @@ async def executar_comando(comando):
     elif 'desligar computador' in comando:
         Falar('Seu computador será desligado em 30 segundos. Você pode cancelar o desligamento dizendo "cancelar desligamento".')
         os.system("shutdown /s /t 30")  # Comando para desligar em 30 segundos
+    elif 'notícias de' in comando:
+        noticias = comando.replace('notícias de', '').strip()
+        Falar('Procurando por notícias de ' + noticias)
+        news = await news_api(noticias)  # Corrigido o parâmetro para 'noticias'
+        for artigo in news['articles'] [:2]:# limiar a 2 noticias
+            Falar(f"Título: {artigo['title']}")
+            Falar(f"{artigo['description']}\n")
     elif 'cancelar desligamento' in comando:
         os.system("shutdown /a")  # Comando para abortar o desligamento
         Falar("Desligamento cancelado.")
@@ -219,6 +228,11 @@ async def modo_apresentacao():
     time.sleep(1)
     Falar("Como posso te ajudar hoje?")
 
+async def news_api(termo_pesquisa):
+    url = f'https://newsapi.org/v2/everything?q={termo_pesquisa}&apiKey={senha_api_news}'
+    resposta = requests.get(url)
+    return resposta.json()  # Adicionado return para retornar os dados da API
+
 if __name__ == "__main__":
-    asyncio.run(modo_apresentacao())
+   # asyncio.run(modo_apresentacao())
     asyncio.run(comando_voz_usuario())
