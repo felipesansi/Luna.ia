@@ -11,13 +11,14 @@ import pyowm
 import threading
 import asyncio
 import json
-
+from dotenv import load_dotenv
 # Inicializa o reconhecedor de voz e o mixer do pygame
 audio = sr.Recognizer()
 pygame.mixer.init()
 
-
-owm = pyowm.OWM('166936b11d98f4fc3e044f70dd6fa985')
+load_dotenv()
+senha_api = os.getenv('senha_api_tempo')
+owm = pyowm.OWM(senha_api)
 mgr = owm.weather_manager()
 silencio = False
 
