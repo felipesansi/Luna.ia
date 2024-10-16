@@ -1,29 +1,83 @@
-# Assistente Virtual em Python
+# Luna - Assistente Virtual
 
-Este projeto é um assistente virtual desenvolvido em Python que utiliza reconhecimento de voz e síntese de fala. O assistente pode responder a perguntas, fornecer informações sobre o clima, tocar músicas e executar pesquisas na Wikipédia e no Google.
+Luna é uma assistente virtual construída em Python, capaz de realizar diversas tarefas através de comandos de voz. Ela pode responder perguntas, tocar músicas, fornecer informações sobre o clima, e muito mais!
 
 ## Funcionalidades
 
-- **Reconhecimento de voz**: Escuta comandos dados pelo usuário.
-- **Síntese de fala**: Responde ao usuário com uma voz gerada por texto.
-- **Informações do clima**: Obtém a temperatura e a descrição do clima em uma cidade específica.
-- **Pesquisas na Wikipédia**: Realiza buscas e fornece resumos de artigos da Wikipédia.
-- **Abertura de sites**: Abre URLs específicas, como o YouTube.
-- **Toque de músicas**: Toca músicas do YouTube com base no comando do usuário.
-- **Modo silencioso**: Permite ao usuário silenciar o assistente temporariamente.
+- **Reconhecimento de Voz**: Ouça e reconheça comandos falados.
+- **Respostas por Voz**: Responda ao usuário com síntese de voz.
+- **Informações Climáticas**: Consulte a temperatura e condições meteorológicas de qualquer cidade.
+- **Pesquisas na Web**: Realize buscas no Google e Wikipedia.
+- **Abertura de Sites**: Abra sites populares como Google, Instagram, Facebook, Spotify e GitHub.
+- **Toque de Músicas**: Reproduza músicas diretamente do YouTube.
+- **Notícias**: Consulte as últimas notícias de vários tópicos.
+- **Comandos Personalizados**: Aprenda novos comandos que o usuário ensina.
 
 ## Pré-requisitos
 
-Antes de executar o assistente, verifique se você tem as seguintes bibliotecas instaladas:
+- Python 3.6 ou superior
+- Bibliotecas necessárias:
+  - `speech_recognition`
+  - `gtts`
+  - `pygame`
+  - `wikipedia`
+  - `pywhatkit`
+  - `pyowm`
+  - `requests`
+  - `python-dotenv`
 
-- `speech_recognition`
-- `gtts`
-- `pygame`
-- `wikipedia`
-- `pywhatkit`
-- `pyowm`
-
-Você pode instalá-las utilizando o seguinte comando:
+Você pode instalar as bibliotecas necessárias com o seguinte comando:
 
 ```bash
-pip install speech_recognition gtts pygame wikipedia pywhatkit pyowm
+pip install speech_recognition gtts pygame wikipedia-api pywhatkit pyowm requests python-dotenv
+
+## configuração 
+ # Luna - Assistente Virtual
+
+Luna é uma assistente virtual construída em Python, capaz de realizar diversas tarefas através de comandos de voz. Ela pode responder perguntas, tocar músicas, fornecer informações sobre o clima, e muito mais!
+
+## Funcionalidades
+
+- **Reconhecimento de Voz**: Ouça e reconheça comandos falados.
+- **Respostas por Voz**: Responda ao usuário com síntese de voz.
+- **Informações Climáticas**: Consulte a temperatura e condições meteorológicas de qualquer cidade.
+- **Pesquisas na Web**: Realize buscas no Google e Wikipedia.
+- **Abertura de Sites**: Abra sites populares como Google, Instagram, Facebook, Spotify e GitHub.
+- **Toque de Músicas**: Reproduza músicas diretamente do YouTube.
+- **Notícias**: Consulte as últimas notícias de vários tópicos.
+- **Comandos Personalizados**: Aprenda novos comandos que o usuário ensina.
+
+## Pré-requisitos
+
+- Python 3.6 ou superior
+- Bibliotecas necessárias:
+  - `speech_recognition`
+  - `gtts`
+  - `pygame`
+  - `wikipedia`
+  - `pywhatkit`
+  - `pyowm`
+  - `requests`
+  - `python-dotenv`
+
+Você pode instalar as bibliotecas necessárias com o seguinte comando:
+
+```bash
+pip install speech_recognition gtts pygame wikipedia-api pywhatkit pyowm requests python-dotenv
+
+##Configuração
+
+1. Obtenha suas chaves de API:
+
+Crie uma conta em OpenWeatherMap para obter a chave da API do clima.
+
+Crie uma conta em NewsAPI para obter a chave da API de notícias.
+
+
+
+2. Crie um arquivo .env na raiz do seu projeto com as seguintes variáveis:
+
+senha_api_tempo=SEU_API_KEY_DO_CLIMA
+senha_api_news=SEU_API_KEY_DE_NOTÍCIAS
+
+
