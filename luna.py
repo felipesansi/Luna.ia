@@ -104,6 +104,7 @@ async def sites(url):
         "spotify": "https://open.spotify.com/intl-pt",
         "github": "https://www.github.com"
     }
+    
     if url in urls:
         Falar(f"Abrindo {url} agora...")
         webbrowser.open(urls[url])
@@ -135,15 +136,20 @@ async def executar_comando(comando):
             pergunta = partes[0].strip()
             resposta = partes[1].strip()
             await ensinar_luna(pergunta, resposta)
+       
         else:
             Falar("Por favor, use o formato: me ensine sobre [pergunta], a resposta é [resposta]")
+    
     elif comando in comandos:
         Falar(comandos[comando])
+   
     elif 'o que você pode fazer' in comando:
         Falar('Eu posso falar as horas, fazer pesquisas na Wikipédia e Google, abrir sites como Google, Instagram, Facebook, Spotify e Github, além de reproduzir músicas.')
+    
     elif 'horas são' in comando:
         horas = datetime.datetime.now().strftime('%H:%M')
         Falar("Agora são " + horas)
+    
     elif 'me diga sobre' in comando or 'me fale sobre' in comando:
         sobre = comando.replace('me diga sobre', '').replace('me fale sobre', '').strip()
         wikipedia.set_lang('pt')
@@ -153,13 +159,16 @@ async def executar_comando(comando):
             Falar(resposta)
         except wikipedia.exceptions.DisambiguationError:
             Falar("A pesquisa retornou múltiplas opções. Por favor, seja mais específico.")
+    
     elif 'abra o' in comando:
         site = comando.replace('abra o', '').strip()
         await sites(site)
+   
     elif 'toque' in comando:
         toque = comando.replace('toque', '').strip()
         Falar('Tocando ' + toque)
         threading.Thread(target=kit.playonyt, args=(toque,)).start()  # Executa em uma nova thread
+   
     elif 'qual a temperatura em' in comando:
         cidade = comando.replace('qual a temperatura em', '').strip()
         Falar('Obtendo informações do clima em ' + cidade)
@@ -171,29 +180,42 @@ async def executar_comando(comando):
             Falar(f'Em {cidade} a temperatura é {temperatura:.1f}°C e o tempo está {descricao}.')
         except pyowm.commons.exceptions.NotFoundError:
             Falar(f"Não consegui encontrar informações climáticas para {cidade}.")
+  
     elif 'procure por' in comando:
         pesquisa = comando.replace('procure por', '').strip()
         Falar('Procurando no Google por ' + pesquisa)
         threading.Thread(target=kit.search, args=(pesquisa,)).start()  # Executa em uma nova thread
+   
     elif 'sair' in comando or 'encerrar' in comando:
         Falar("Encerrando o assistente. Até logo!")
         exit()
+   
     elif 'pare de falar' in comando or 'silêncio' in comando:
         silencio = True
         Falar("Entrando em modo silencioso.")
+    
     elif 'fim do silêncio' in comando:
         silencio = False
         Falar("Saindo do modo silencioso.")
+   
     elif 'desligar computador' in comando:
         Falar('Seu computador será desligado em 30 segundos. Você pode cancelar o desligamento dizendo "cancelar desligamento".')
         os.system("shutdown /s /t 30")  # Comando para desligar em 30 segundos
+ 
     elif 'notícias de' in comando:
         noticias = comando.replace('notícias de', '').strip()
         Falar('Procurando por notícias de ' + noticias)
-        news = await news_api(noticias)  # Corrigido o parâmetro para 'noticias'
+        news = await news_api(noticias)  
         for artigo in news['articles'] [:2]:# limiar a 2 noticias
             Falar(f"Título: {artigo['title']}")
             Falar(f"{artigo['description']}\n")
+   
+    elif 'previsão do tempo em ' in comando:
+        cidade = comando.replace('previsão do tempo em','').strip()
+        Falar("Obtendo previsão do tempo em "+ cidade)
+        await obter_previsao(cidade)
+
+
     elif 'cancelar desligamento' in comando:
         os.system("shutdown /a")  # Comando para abortar o desligamento
         Falar("Desligamento cancelado.")
@@ -231,7 +253,23 @@ async def modo_apresentacao():
 async def news_api(termo_pesquisa):
     url = f'https://newsapi.org/v2/everything?q={termo_pesquisa}&apiKey={senha_api_news}'
     resposta = requests.get(url)
-    return resposta.json()  # Adicionado return para retornar os dados da API
+    return resposta.json()  
+
+async def obter_previsao(cidade):
+    try:
+        previsao = mgr.forecast_at_place(cidade, '5d').forecast
+        previsoes = previsao.weathers
+
+        Falar(f"Previsão do tempo para {cidade} nos próximos 5 dias:")
+        for weather in previsoes:
+            dados = weather.reference_time('date')
+            temperatura = weather.temperature('celsius')['day']
+            descricao = traduzir_clima(weather.detailed_status)
+            Falar(f"Data: {dados.strftime('%d/%m/%Y')}, Temperatura: {temperatura:.1f}°C, Condição: {descricao}")
+
+    except pyowm.commons.exceptions.NotFoundError:
+        Falar(f"Não consegui encontrar informações climáticas para {cidade}.")
+    
 
 if __name__ == "__main__":
    # asyncio.run(modo_apresentacao())
