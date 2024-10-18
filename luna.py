@@ -210,11 +210,10 @@ async def executar_comando(comando):
             Falar(f"Título: {artigo['title']}")
             Falar(f"{artigo['description']}\n")
    
-    elif 'previsão do tempo em ' in comando:
-        cidade = comando.replace('previsão do tempo em','').strip()
-        Falar("Obtendo previsão do tempo em "+ cidade)
+    elif 'previsão do tempo em' in comando:
+        cidade = comando.replace('previsão do tempo em', '').strip()
+        Falar("Obtendo previsão do tempo em " + cidade)
         await obter_previsao(cidade)
-
 
     elif 'cancelar desligamento' in comando:
         os.system("shutdown /a")  # Comando para abortar o desligamento
@@ -257,19 +256,28 @@ async def news_api(termo_pesquisa):
 
 async def obter_previsao(cidade):
     try:
-        previsao = mgr.forecast_at_place(cidade, '5d').forecast
-        previsoes = previsao.weathers
+      
+        url = f"http://api.openweathermap.org/data/2.5/forecast?q={cidade}&appid={senha_api}&units=metric"  # 
+        resposta = requests.get(url)
+        resposta.raise_for_status()  # Levanta um erro para códigos de status HTTP não 200
+        
+        dados = resposta.json()
+        previsoes = dados['list'][:5]  # Limitar a 5 previsões (próximos 5 dias)
 
         Falar(f"Previsão do tempo para {cidade} nos próximos 5 dias:")
-        for weather in previsoes:
-            dados = weather.reference_time('date')
-            temperatura = weather.temperature('celsius')['day']
-            descricao = traduzir_clima(weather.detailed_status)
-            Falar(f"Data: {dados.strftime('%d/%m/%Y')}, Temperatura: {temperatura:.1f}°C, Condição: {descricao}")
+        for previsao in previsoes:
+            data = datetime.datetime.fromtimestamp(previsao['dt'])
+            temperatura_min = previsao['main']['temp_min']
+            temperatura_max = previsao['main']['temp_max']
+            descricao = traduzir_clima(previsao['weather'][0]['description'])
+            Falar(f"Data: {data.strftime('%d/%m/%Y')}, Condição: {descricao}, Temperatura: entre {temperatura_min:.1f}°C e {temperatura_max:.1f}°C.")
 
-    except pyowm.commons.exceptions.NotFoundError:
-        Falar(f"Não consegui encontrar informações climáticas para {cidade}.")
-    
+    except requests.exceptions.HTTPError as e:
+        Falar(f"Ocorreu um erro ao obter a previsão: {e}")
+    except KeyError:
+        Falar("Não consegui encontrar informações de previsão para a cidade especificada.")
+    except Exception as e:
+        Falar(f"Ocorreu um erro inesperado: {e}")
 
 if __name__ == "__main__":
    # asyncio.run(modo_apresentacao())
