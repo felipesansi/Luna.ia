@@ -130,16 +130,19 @@ async def executar_comando(comando):
     global silencio
     comandos = await carregar_comandos()
 
-    if 'me ensine sobre' in comando:
-        partes = comando.replace('me ensine sobre', '').split('a resposta é')
-        if len(partes) == 2:
-            pergunta = partes[0].strip()
-            resposta = partes[1].strip()
-            await ensinar_luna(pergunta, resposta)
-       
+    if 'adicionar comando' in comando:
+        Falar('Ok, qual a pergunta?')
+        pergunta = ouvir()
+        if pergunta:
+            Falar('Pergunta gravada. Qual a resposta?')
+            resposta = ouvir()
+            if resposta:
+                await ensinar_luna(pergunta, resposta)
+            else:
+                Falar('Não consegui gravar a resposta.')
         else:
-            Falar("Por favor, use o formato: me ensine sobre [pergunta], a resposta é [resposta]")
-    
+            Falar('Não consegui gravar a pergunta.')
+
     elif comando in comandos:
         Falar(comandos[comando])
    
@@ -206,7 +209,7 @@ async def executar_comando(comando):
         noticias = comando.replace('notícias de', '').strip()
         Falar('Procurando por notícias de ' + noticias)
         news = await news_api(noticias)  
-        for artigo in news['articles'] [:2]:# limiar a 2 noticias
+        for artigo in news['articles'][:2]:  # Limitar a 2 notícias
             Falar(f"Título: {artigo['title']}")
             Falar(f"{artigo['description']}\n")
    
@@ -256,8 +259,7 @@ async def news_api(termo_pesquisa):
 
 async def obter_previsao(cidade):
     try:
-      
-        url = f"http://api.openweathermap.org/data/2.5/forecast?q={cidade}&appid={senha_api}&units=metric"  # 
+        url = f"http://api.openweathermap.org/data/2.5/forecast?q={cidade}&appid={senha_api}&units=metric"
         resposta = requests.get(url)
         resposta.raise_for_status()  # Levanta um erro para códigos de status HTTP não 200
         
