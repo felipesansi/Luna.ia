@@ -19,10 +19,15 @@ audio = sr.Recognizer()
 pygame.mixer.init()
 
 load_dotenv()
+
 senha_api = os.getenv('senha_api_tempo')
+senha_api_news = os.getenv('senha_api_news')
+senha_api_football = os.getenv('senha_api_football')
+
 owm = pyowm.OWM(senha_api)
 mgr = owm.weather_manager()
-senha_api_news = os.getenv('senha_api_news')
+
+jogos_ao_vivo = [] 
 
 silencio = False
 
@@ -53,7 +58,7 @@ def Falar(texto):
         except Exception as e:
             print(f"Ocorreu um erro ao tentar remover o arquivo {arquivo_audio}: {e}")
 
-def ouvir():
+def Ouvir():
     with sr.Microphone() as source:
         try:
             audio.adjust_for_ambient_noise(source)  # Ajusta para o ruído ambiente
@@ -125,17 +130,18 @@ def traduzir_clima(descricao):
         "mist": "névoa"
     }
     return traducoes.get(descricao, descricao)
-
+   
 async def executar_comando(comando):
     global silencio
+    hora = datetime.datetime.now().hour
     comandos = await carregar_comandos()
 
     if 'adicionar comando' in comando:
         Falar('Ok, qual a pergunta?')
-        pergunta = ouvir()
+        pergunta = Ouvir()
         if pergunta:
             Falar('Pergunta gravada. Qual a resposta?')
-            resposta = ouvir()
+            resposta = Ouvir()
             if resposta:
                 await ensinar_luna(pergunta, resposta)
             else:
@@ -149,6 +155,12 @@ async def executar_comando(comando):
     elif 'o que você pode fazer' in comando:
         Falar('Eu posso falar as horas, fazer pesquisas na Wikipédia e Google, abrir sites como Google, Instagram, Facebook, Spotify e Github, além de reproduzir músicas.')
     
+    elif 'bom dia' in comando:
+        if hora >= 0 and hora < 12:
+            Falar('Bom dia! Espero que você tenha um dia maravilhoso! Estou aqui sempre pronta para te ajudar.')
+        else:
+            Falar('Não estamos no horario de bom dia, mas estou aqui para te ajudar.')
+
     elif 'horas são' in comando:
         horas = datetime.datetime.now().strftime('%H:%M')
         Falar("Agora são " + horas)
@@ -192,7 +204,22 @@ async def executar_comando(comando):
     elif 'sair' in comando or 'encerrar' in comando:
         Falar("Encerrando o assistente. Até logo!")
         exit()
-   
+
+    
+    elif 'jogos ao vivo' in comando:
+        Falar('obtendo jogos ao vivo')
+        await obter_jogos_ao_vivo()
+        
+        if jogos_ao_vivo:
+          
+          Falar("Aqui estão os jogos ao vivo:")
+         
+          for jogo in jogos_ao_vivo:
+                
+                Falar(f"{jogo['home_team']} {jogo['score_home']} x {jogo['away_team']} {jogo['score_away']} - Status: {jogo['status']}")
+        else:
+            Falar("Não há jogos ao vivo no momento.")
+
     elif 'pare de falar' in comando or 'silêncio' in comando:
         silencio = True
         Falar("Entrando em modo silencioso.")
@@ -221,18 +248,21 @@ async def executar_comando(comando):
     elif 'cancelar desligamento' in comando:
         os.system("shutdown /a")  # Comando para abortar o desligamento
         Falar("Desligamento cancelado.")
+ 
     elif 'reiniciar computador' in comando:
         Falar('Seu computador será reiniciado em 30 segundos. Você pode cancelar o reinício dizendo "cancelar reinício".')
         os.system("shutdown /r /t 30")  # Comando para reiniciar em 30 segundos
+  
     elif 'cancelar reinício' in comando:
         os.system("shutdown /a")  # Comando para abortar o reinício
         Falar("Reinício cancelado.")
+   
     else:
         Falar("Comando não reconhecido.")
 
 async def comando_voz_usuario():
     while True:
-        comando = ouvir()
+        comando = Ouvir()
         if comando and 'luna' in comando:
             comando = comando.replace('luna', '').strip()
             await executar_comando(comando)
@@ -244,7 +274,7 @@ async def modo_apresentacao():
     time.sleep(1)
     Falar("Posso falar as horas, fazer pesquisas na Wikipédia e Google, abrir sites como Google, Instagram, Facebook, Spotify e Github, além de reproduzir músicas.")
     time.sleep(1)
-    Falar("Para ouvir música diga toque nome do artista e música")
+    Falar("Para Ouvir música diga toque nome do artista e música")
     time.sleep(1)
     Falar("Posso também informar a temperatura em qualquer cidade do mundo, além de aprender novos comandos que você me ensinar.")
     time.sleep(1)
@@ -281,6 +311,34 @@ async def obter_previsao(cidade):
     except Exception as e:
         Falar(f"Ocorreu um erro inesperado: {e}")
 
+async def obter_jogos_ao_vivo():
+    global jogos_ao_vivo
+    url = "https://v3.football.api-sports.io/fixtures?live=all "
+    headers = {
+        'x-apisports-key': senha_api_football,
+        'x-rapidapi-host': 'v3.football.api-sports.io'
+    }
+
+    try:
+        resposta = requests.get(url, headers=headers)
+        resposta.raise_for_status()
+        dados = resposta.json()
+
+        jogos_ao_vivo = []  # Limpa a lista antes de adicionar novos dados
+
+        for jogo in dados['response']:
+              if jogo['league']['country'] == 'Brazil':  # Filtra jogos no Brasil
+               jogo_info = {
+                'home_team': jogo['teams']['home']['name'],
+                'away_team': jogo['teams']['away']['name'],
+                'score_home': jogo['goals']['home'],
+                'score_away': jogo['goals']['away'],
+                'status': jogo['fixture']['status']['long']
+            }
+              jogos_ao_vivo.append(jogo_info)
+
+    except requests.exceptions.HTTPError as e:
+        Falar(f"Erro ao tentar ver todos os jogos ao vivo no Brasil: {e}")
 if __name__ == "__main__":
    # asyncio.run(modo_apresentacao())
     asyncio.run(comando_voz_usuario())
