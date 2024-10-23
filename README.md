@@ -58,7 +58,7 @@ Este projeto está licenciado sob a licença MIT.
 
 Se você tiver alguma dúvida ou precisar de ajuda, por favor entre em contato com Felipe em felipeprofissional22@gmail.com.
 
-*Tecnologias Utilizadas*
+## Tecnologias Utilizadas
 
 
 - Python
@@ -68,7 +68,8 @@ Se você tiver alguma dúvida ou precisar de ajuda, por favor entre em contato c
 - API do News API
 - API do Football API
 
-*Requisitos*
+## Requisitos
+
 
 
 - Python 3.12.7
