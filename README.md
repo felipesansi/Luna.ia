@@ -17,7 +17,7 @@ Luna é um assistente virtual desenvolvido em Python que utiliza reconhecimento 
 ## Instalação
 
 
-### Passos para instalar e executar Luna:*
+### Passos para instalar e executar Luna:
 
 1. Clone o repositório: `git clone (link unavailable)`
 2. Instale as dependências necessárias: `pip install -r requirements.txt`
