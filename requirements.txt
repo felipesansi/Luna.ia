@@ -1,0 +1,30 @@
+
+```
+SpeechRecognition==3.8.1
+gTTS==2.2.1
+pyttsx3==2.90
+wikipedia==1.4.0
+pygame==2.1.2
+pywhatkit==5.1
+pyowm==3.2.0
+requests==2.28.1
+json5==0.9.6
+dotenv==0.0.5
+asyncio==3.4.3
+aiohttp==3.8.1
+newsapi==1.2.0
+football-api==1.1.0
+```
+
+Observações:
+
+- As versões das bibliotecas podem variar dependendo das necessidades específicas do projeto.
+- Certifique-se de instalar as bibliotecas utilizando o comando `pip install -r requirements.txt` após criar o arquivo.
+- Além das bibliotecas listadas, é necessário ter o Python 3.x instalado.
+
+Se você precisar de ajuda para instalar as dependências, basta executar o comando:
+
+```
+bash
+pip install -r requirements.txt
+```
