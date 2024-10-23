@@ -1,6 +1,6 @@
-Aqui está o README em formato Markdown:
 
-*Luna: Assistente Virtual*
+
+## Luna: Assistente Virtual
 
 
 *Descrição*
@@ -56,7 +56,7 @@ Este projeto está licenciado sob a licença MIT.
 *Contato*
 
 
-Se você tiver alguma dúvida ou precisar de ajuda, por favor entre em contato com [Felipe] em [felipeprofissional22@gmail.com].
+Se você tiver alguma dúvida ou precisar de ajuda, por favor entre em contato com Felipe em felipeprofissional22@gmail.com.
 
 *Tecnologias Utilizadas*
 
