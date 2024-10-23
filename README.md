@@ -1,45 +1,75 @@
-# Luna - Assistente Virtual
+Aqui está o README em formato Markdown:
 
-Luna é uma assistente virtual construída em Python, capaz de realizar diversas tarefas através de comandos de voz. Ela pode responder perguntas, tocar músicas, fornecer informações sobre o clima, e muito mais!
+*Luna: Assistente Virtual*
 
-## Funcionalidades
 
-- **Reconhecimento de Voz**: Ouça e reconheça comandos falados.
-- **Respostas por Voz**: Responda ao usuário com síntese de voz.
-- **Informações Climáticas**: Consulte a temperatura e condições meteorológicas de qualquer cidade.
-- **Pesquisas na Web**: Realize buscas no Google e Wikipedia.
-- **Abertura de Sites**: Abra sites populares como Google, Instagram, Facebook, Spotify e GitHub.
-- **Toque de Músicas**: Reproduza músicas diretamente do YouTube.
-- **Notícias**: Consulte as últimas notícias de vários tópicos.
-- **Comandos Personalizados**: Aprenda novos comandos que o usuário ensina.
+*Descrição*
 
-## Pré-requisitos
+Luna é um assistente virtual desenvolvido em Python que utiliza reconhecimento de voz e síntese de texto para interagir com o usuário. Ele pode realizar várias tarefas, como:
 
-- Python 3.6 ou superior
-- Bibliotecas necessárias:
-  - `speech_recognition`
-  - `gtts`
-  - `pygame`
-  - `wikipedia`
-  - `pywhatkit`
-  - `pyowm`
-  - `requests`
-  - `python-dotenv`
+- Falar as horas
+- Fazer pesquisas na Wikipédia e Google
+- Abrir sites como Google, Instagram, Facebook, Spotify e Github
+- Reproduzir músicas
+- Informar a temperatura em qualquer cidade do mundo
+- Aprender novos comandos que você ensinar
 
-Você pode instalar as bibliotecas necessárias com o seguinte comando:
+*Instalação*
 
-```bash
-pip install speech_recognition gtts pygame wikipedia-api pywhatkit pyowm requests python-dotenv
-```
 
-## Configuração
+*Passos para instalar e executar Luna:*
 
-1. **Obtenha suas chaves de API**:
+1. Clone o repositório: `git clone (link unavailable)`
+2. Instale as dependências necessárias: `pip install -r requirements.txt`
+3. Configure as variáveis de ambiente:
+    - `senha_api`: chave da API do OpenWeatherMap
+    - `senha_api_news`: chave da API do News API
+    - `senha_api_football`: chave da API do Football API
+4. Execute o script: `python (link unavailable)`
 
-   - Crie uma conta em [OpenWeatherMap](https://openweathermap.org/) para obter a chave da API do clima.
-   - Crie uma conta em [NewsAPI](https://newsapi.org/) para obter a chave da API de notícias.
-```bash
-senha_api_tempo=SEU_API_KEY_DO_CLIMA
-senha_api_news=SEU_API_KEY_DE_NOTÍCIAS
-```
+*Comandos*
 
+
+Aqui estão alguns comandos que você pode usar com Luna:
+
+- `Luna, que horas são?`
+- `Luna, me diga sobre [tópico]`
+- `Luna, abra o [site]`
+- `Luna, toque [música]`
+- `Luna, qual a temperatura em [cidade]?`
+- `Luna, aprenda [comando]`
+
+*Contribuição*
+
+
+Se você deseja contribuir para o projeto, por favor:
+
+1. Faça um fork do repositório
+2. Crie uma branch para sua feature
+3. Envie um pull request com suas alterações
+
+*Licença*
+
+
+Este projeto está licenciado sob a licença MIT.
+
+*Contato*
+
+
+Se você tiver alguma dúvida ou precisar de ajuda, por favor entre em contato com [Felipe] em [felipeprofissional22@gmail.com].
+
+*Tecnologias Utilizadas*
+
+
+- Python
+- Reconhecimento de voz (Speech Recognition)
+- Síntese de texto (gTTS)
+- API do OpenWeatherMap
+- API do News API
+- API do Football API
+
+*Requisitos*
+
+
+- Python 3.12.7
+- Bibliotecas necessárias instaladas (ver requirements.txt)
