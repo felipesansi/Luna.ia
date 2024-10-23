@@ -19,7 +19,7 @@ Luna é um assistente virtual desenvolvido em Python que utiliza reconhecimento 
 
 ### Passos para instalar e executar Luna:
 
-1. Clone o repositório: `git clone (link unavailable)`
+1. Clone o repositório: `git clone https://github.com/felipesansi/Luna.ia`
 2. Instale as dependências necessárias: `pip install -r requirements.txt`
 3. Configure as variáveis de ambiente:
     - `senha_api`: chave da API do OpenWeatherMap
