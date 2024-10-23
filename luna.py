@@ -13,8 +13,10 @@ import asyncio
 import json
 from dotenv import load_dotenv
 import requests
+import pytz
+from dateutil import parser
 
-# Inicializa o reconhecedor de voz e o mixer do pygame
+
 audio = sr.Recognizer()
 pygame.mixer.init()
 
@@ -27,9 +29,18 @@ senha_api_football = os.getenv('senha_api_football')
 owm = pyowm.OWM(senha_api)
 mgr = owm.weather_manager()
 
-jogos_ao_vivo = [] 
-
+jogos_ao_vivo = []
+jogos_hoje = []
 silencio = False
+
+campeonatos_famosos = [
+    "Brasileirão Série A", "Copa Libertadores", "Copa do Brasil", "Copa Sul-Americana",
+    "Champions League", "Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"
+]
+
+times_brasileiros = ["Flamengo", "Palmeiras", "São Paulo", "Santos", "Corinthians", "Grêmio", 
+                     "Internacional", "Atlético Mineiro", "Cruzeiro", "Fluminense", "Botafogo", 
+                     "Vasco da Gama", "Bahia", "Sport Recife", "Ceará", "Fortaleza"]
 
 def Falar(texto):
     global silencio
@@ -44,9 +55,9 @@ def Falar(texto):
     pygame.mixer.music.load(arquivo_audio)
     pygame.mixer.music.play()
 
-    # Aguardar até a reprodução terminar
+   
     while pygame.mixer.music.get_busy():
-        time.sleep(0.05)  # Reduz o tempo de espera ativo
+        time.sleep(0.05)  
 
     pygame.mixer.music.unload()
 
@@ -61,12 +72,12 @@ def Falar(texto):
 def Ouvir():
     with sr.Microphone() as source:
         try:
-            audio.adjust_for_ambient_noise(source)  # Ajusta para o ruído ambiente
+            audio.adjust_for_ambient_noise(source) 
             print("Estou ouvindo, fale algo")
             voz = audio.listen(source)
             comando = audio.recognize_google(voz, language='pt-BR')
             print("O usuário disse: " + comando)
-            return comando.lower()  # Retorna o comando em minúsculas
+            return comando.lower()  
         except sr.UnknownValueError:
             print("Não consegui entender o áudio.")
             Falar("Desculpe, não consegui entender o que você disse.")
@@ -130,12 +141,22 @@ def traduzir_clima(descricao):
         "mist": "névoa"
     }
     return traducoes.get(descricao, descricao)
-   
+
+def criar_pasta(nome_pasta):
+    area_de_trabalho = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    caminho_pasta = os.path.join(area_de_trabalho, nome_pasta)
+
+    try:
+        os.makedirs(caminho_pasta, exist_ok=True)
+        Falar(f"Pasta {nome_pasta} criada com sucesso na área de trabalho.")
+    except Exception as e:
+        Falar(f"Ocorreu um erro ao criar a pasta: {e}")
+
 async def executar_comando(comando):
     global silencio
     hora = datetime.datetime.now().hour
     comandos = await carregar_comandos()
-
+  
     if 'adicionar comando' in comando:
         Falar('Ok, qual a pergunta?')
         pergunta = Ouvir()
@@ -159,7 +180,7 @@ async def executar_comando(comando):
         if hora >= 0 and hora < 12:
             Falar('Bom dia! Espero que você tenha um dia maravilhoso! Estou aqui sempre pronta para te ajudar.')
         else:
-            Falar('Não estamos no horario de bom dia, mas estou aqui para te ajudar.')
+            Falar('Não estamos no horário de bom dia, mas estou aqui para te ajudar.')
 
     elif 'horas são' in comando:
         horas = datetime.datetime.now().strftime('%H:%M')
@@ -182,7 +203,7 @@ async def executar_comando(comando):
     elif 'toque' in comando:
         toque = comando.replace('toque', '').strip()
         Falar('Tocando ' + toque)
-        threading.Thread(target=kit.playonyt, args=(toque,)).start()  # Executa em uma nova thread
+        threading.Thread(target=kit.playonyt, args=(toque,)).start()
    
     elif 'qual a temperatura em' in comando:
         cidade = comando.replace('qual a temperatura em', '').strip()
@@ -199,146 +220,111 @@ async def executar_comando(comando):
     elif 'procure por' in comando:
         pesquisa = comando.replace('procure por', '').strip()
         Falar('Procurando no Google por ' + pesquisa)
-        threading.Thread(target=kit.search, args=(pesquisa,)).start()  # Executa em uma nova thread
-   
-    elif 'sair' in comando or 'encerrar' in comando:
-        Falar("Encerrando o assistente. Até logo!")
-        exit()
+        threading.Thread(target=kit.search, args=(pesquisa,)).start() 
 
-    
-    elif 'jogos ao vivo' in comando:
-        Falar('obtendo jogos ao vivo')
-        await obter_jogos_ao_vivo()
-        
-        if jogos_ao_vivo:
-          
-          Falar("Aqui estão os jogos ao vivo:")
-         
-          for jogo in jogos_ao_vivo:
-                
-                Falar(f"{jogo['home_team']} {jogo['score_home']} x {jogo['away_team']} {jogo['score_away']} - Status: {jogo['status']}")
+    elif 'notícias de hoje' in comando:
+        Falar('Obtendo as últimas notícias...')
+        url = f'https://newsapi.org/v2/top-headlines?country=br&apiKey={senha_api_news}'
+        response = requests.get(url)
+        noticias = response.json()
+        if noticias['status'] == 'ok':
+            for i, noticia in enumerate(noticias['articles'][:5], start=1):
+                Falar(f"Notícia {i}: {noticia['title']}")
         else:
-            Falar("Não há jogos ao vivo no momento.")
-
-    elif 'pare de falar' in comando or 'silêncio' in comando:
+            Falar('Não consegui obter as notícias no momento.')
+   
+    elif 'desligue o microfone' in comando or 'fique em silêncio' in comando:
         silencio = True
-        Falar("Entrando em modo silencioso.")
+        Falar("Ok, ficarei em silêncio.")
     
-    elif 'fim do silêncio' in comando:
+    elif 'volte a falar' in comando or 'pode falar' in comando:
         silencio = False
-        Falar("Saindo do modo silencioso.")
+        Falar("Ok, voltarei a falar.")
    
-    elif 'desligar computador' in comando:
-        Falar('Seu computador será desligado em 30 segundos. Você pode cancelar o desligamento dizendo "cancelar desligamento".')
-        os.system("shutdown /s /t 30")  # Comando para desligar em 30 segundos
- 
-    elif 'notícias de' in comando:
-        noticias = comando.replace('notícias de', '').strip()
-        Falar('Procurando por notícias de ' + noticias)
-        news = await news_api(noticias)  
-        for artigo in news['articles'][:2]:  # Limitar a 2 notícias
-            Falar(f"Título: {artigo['title']}")
-            Falar(f"{artigo['description']}\n")
-   
-    elif 'previsão do tempo em' in comando:
-        cidade = comando.replace('previsão do tempo em', '').strip()
-        Falar("Obtendo previsão do tempo em " + cidade)
-        await obter_previsao(cidade)
-
-    elif 'cancelar desligamento' in comando:
-        os.system("shutdown /a")  # Comando para abortar o desligamento
-        Falar("Desligamento cancelado.")
- 
-    elif 'reiniciar computador' in comando:
-        Falar('Seu computador será reiniciado em 30 segundos. Você pode cancelar o reinício dizendo "cancelar reinício".')
-        os.system("shutdown /r /t 30")  # Comando para reiniciar em 30 segundos
-  
-    elif 'cancelar reinício' in comando:
-        os.system("shutdown /a")  # Comando para abortar o reinício
-        Falar("Reinício cancelado.")
+    elif 'criar pasta' in comando:
+        Falar("Qual o nome da pasta?")
+        nome_pasta = Ouvir()
+        if nome_pasta:
+            criar_pasta(nome_pasta)
+        else:
+            Falar("Não consegui entender o nome da pasta.")
    
     else:
-        Falar("Comando não reconhecido.")
+        Falar("Desculpe, não entendi o comando. Você pode repetir?")
 
-async def comando_voz_usuario():
+async def obter_jogos_ao_vivo():
+    global jogos_ao_vivo
+    url = "https://v3.football.api-sports.io/fixtures?live=all"
+    headers = {
+        'x-apisports-key': senha_api_football
+    }
+    response = requests.get(url, headers=headers)
+   
+    if response.status_code == 200:
+        data = response.json()
+        jogos_ao_vivo = [
+            {
+                'home_team': fixture['teams']['home']['name'],
+                'away_team': fixture['teams']['away']['name'],
+                'score_home': fixture['goals']['home'],
+                'score_away': fixture['goals']['away'],
+                'status': fixture['fixture']['status']['short']
+            }
+            for fixture in data['response']
+        ]
+    else:
+        Falar("Não consegui obter os jogos ao vivo no momento.")
+
+def formatar_horario_iso(iso_str):
+    try:
+        dt = parser.parse(iso_str)
+        dt = dt.astimezone(pytz.timezone('America/Sao_Paulo'))
+        return dt.strftime('%H:%M')
+    except Exception as e:
+        print(f"Erro ao formatar o horário: {e}")
+        return "Hora desconhecida"
+
+async def obter_jogos_hoje():
+    global jogos_hoje
+    hoje = datetime.datetime.now().strftime('%Y-%m-%d')
+    url = f"https://v3.football.api-sports.io/fixtures?date={hoje}"
+    headers = {
+        'x-apisports-key': senha_api_football
+    }
+    response = requests.get(url, headers=headers)
+   
+    if response.status_code == 200:
+        data = response.json()
+        jogos_hoje = [
+            {
+                'home_team': fixture['teams']['home']['name'],
+                'away_team': fixture['teams']['away']['name'],
+                'time': formatar_horario_iso(fixture['fixture']['date']),
+                'league': fixture['league']['name']
+            }
+            for fixture in data['response']
+            if (fixture['league']['name'] in campeonatos_famosos or 
+                fixture['teams']['home']['name'] in times_brasileiros or 
+                fixture['teams']['away']['name'] in times_brasileiros)
+        ]
+       
+        if jogos_hoje:
+            Falar("Aqui estão os jogos programados para hoje:")
+            for jogo in jogos_hoje:
+                Falar(f"{jogo['home_team']} x {jogo['away_team']} - Hora: {jogo['time']} - Campeonato: {jogo['league']}")
+        else:
+            Falar("Não há jogos programados para hoje.")
+    else:
+        Falar("Não consegui obter os jogos de hoje no momento.")
+
+async def main():
     while True:
         comando = Ouvir()
         if comando and 'luna' in comando:
             comando = comando.replace('luna', '').strip()
             await executar_comando(comando)
         else:
-            Falar("Você não me chamou pelo nome.")
+            Falar('Você não me chamou pelo nome')
 
-async def modo_apresentacao():
-    Falar("Olá, eu sou a Luna, sua assistente virtual. Aqui está o que eu posso fazer:")
-    time.sleep(1)
-    Falar("Posso falar as horas, fazer pesquisas na Wikipédia e Google, abrir sites como Google, Instagram, Facebook, Spotify e Github, além de reproduzir músicas.")
-    time.sleep(1)
-    Falar("Para Ouvir música diga toque nome do artista e música")
-    time.sleep(1)
-    Falar("Posso também informar a temperatura em qualquer cidade do mundo, além de aprender novos comandos que você me ensinar.")
-    time.sleep(1)
-    Falar("Para ativar um comando, basta dizer 'Luna' seguido do comando desejado.")
-    time.sleep(1)
-    Falar("Como posso te ajudar hoje?")
-
-async def news_api(termo_pesquisa):
-    url = f'https://newsapi.org/v2/everything?q={termo_pesquisa}&apiKey={senha_api_news}'
-    resposta = requests.get(url)
-    return resposta.json()  
-
-async def obter_previsao(cidade):
-    try:
-        url = f"http://api.openweathermap.org/data/2.5/forecast?q={cidade}&appid={senha_api}&units=metric"
-        resposta = requests.get(url)
-        resposta.raise_for_status()  # Levanta um erro para códigos de status HTTP não 200
-        
-        dados = resposta.json()
-        previsoes = dados['list'][:5]  # Limitar a 5 previsões (próximos 5 dias)
-
-        Falar(f"Previsão do tempo para {cidade} nos próximos 5 dias:")
-        for previsao in previsoes:
-            data = datetime.datetime.fromtimestamp(previsao['dt'])
-            temperatura_min = previsao['main']['temp_min']
-            temperatura_max = previsao['main']['temp_max']
-            descricao = traduzir_clima(previsao['weather'][0]['description'])
-            Falar(f"Data: {data.strftime('%d/%m/%Y')}, Condição: {descricao}, Temperatura: entre {temperatura_min:.1f}°C e {temperatura_max:.1f}°C.")
-
-    except requests.exceptions.HTTPError as e:
-        Falar(f"Ocorreu um erro ao obter a previsão: {e}")
-    except KeyError:
-        Falar("Não consegui encontrar informações de previsão para a cidade especificada.")
-    except Exception as e:
-        Falar(f"Ocorreu um erro inesperado: {e}")
-
-async def obter_jogos_ao_vivo():
-    global jogos_ao_vivo
-    url = "https://v3.football.api-sports.io/fixtures?live=all "
-    headers = {
-        'x-apisports-key': senha_api_football,
-        'x-rapidapi-host': 'v3.football.api-sports.io'
-    }
-
-    try:
-        resposta = requests.get(url, headers=headers)
-        resposta.raise_for_status()
-        dados = resposta.json()
-
-        jogos_ao_vivo = []  # Limpa a lista antes de adicionar novos dados
-
-        for jogo in dados['response']:
-              if jogo['league']['country'] == 'Brazil':  # Filtra jogos no Brasil
-               jogo_info = {
-                'home_team': jogo['teams']['home']['name'],
-                'away_team': jogo['teams']['away']['name'],
-                'score_home': jogo['goals']['home'],
-                'score_away': jogo['goals']['away'],
-                'status': jogo['fixture']['status']['long']
-            }
-              jogos_ao_vivo.append(jogo_info)
-
-    except requests.exceptions.HTTPError as e:
-        Falar(f"Erro ao tentar ver todos os jogos ao vivo no Brasil: {e}")
 if __name__ == "__main__":
-   # asyncio.run(modo_apresentacao())
-    asyncio.run(comando_voz_usuario())
+    asyncio.run(main())
