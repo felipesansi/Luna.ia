@@ -1,9 +1,9 @@
 
 
-## Luna: Assistente Virtual
+# Luna: Assistente Virtual
 
 
-*Descrição*
+## Descrição
 
 Luna é um assistente virtual desenvolvido em Python que utiliza reconhecimento de voz e síntese de texto para interagir com o usuário. Ele pode realizar várias tarefas, como:
 
@@ -14,10 +14,10 @@ Luna é um assistente virtual desenvolvido em Python que utiliza reconhecimento 
 - Informar a temperatura em qualquer cidade do mundo
 - Aprender novos comandos que você ensinar
 
-*Instalação*
+## Instalação
 
 
-*Passos para instalar e executar Luna:*
+### Passos para instalar e executar Luna:*
 
 1. Clone o repositório: `git clone (link unavailable)`
 2. Instale as dependências necessárias: `pip install -r requirements.txt`
@@ -27,7 +27,7 @@ Luna é um assistente virtual desenvolvido em Python que utiliza reconhecimento 
     - `senha_api_football`: chave da API do Football API
 4. Execute o script: `python (link unavailable)`
 
-*Comandos*
+## Comandos
 
 
 Aqui estão alguns comandos que você pode usar com Luna:
@@ -39,7 +39,7 @@ Aqui estão alguns comandos que você pode usar com Luna:
 - `Luna, qual a temperatura em [cidade]?`
 - `Luna, aprenda [comando]`
 
-*Contribuição*
+## Contribuição
 
 
 Se você deseja contribuir para o projeto, por favor:
@@ -48,12 +48,12 @@ Se você deseja contribuir para o projeto, por favor:
 2. Crie uma branch para sua feature
 3. Envie um pull request com suas alterações
 
-*Licença*
+## Licença
 
 
 Este projeto está licenciado sob a licença MIT.
 
-*Contato*
+## Contato
 
 
 Se você tiver alguma dúvida ou precisar de ajuda, por favor entre em contato com Felipe em felipeprofissional22@gmail.com.
