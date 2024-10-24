@@ -11,11 +11,11 @@ import pyowm
 import threading
 import asyncio
 import json
-from dotenv import load_dotenv
+import openai
 import requests
 import pytz
 from dateutil import parser
-
+from dotenv import load_dotenv
 
 audio = sr.Recognizer()
 pygame.mixer.init()
@@ -25,9 +25,12 @@ load_dotenv()
 senha_api = os.getenv('senha_api_tempo')
 senha_api_news = os.getenv('senha_api_news')
 senha_api_football = os.getenv('senha_api_football')
+senha_api_chatgpt2 = os.getenv('senha_api_chatgpt')
+
 
 owm = pyowm.OWM(senha_api)
 mgr = owm.weather_manager()
+
 
 jogos_ao_vivo = []
 jogos_hoje = []
@@ -153,18 +156,24 @@ def criar_pasta(nome_pasta):
         Falar(f"Ocorreu um erro ao criar a pasta: {e}")
 
 async def executar_comando(comando):
+   
     global silencio
+   
     hora = datetime.datetime.now().hour
+    
     comandos = await carregar_comandos()
   
     if 'adicionar comando' in comando:
         Falar('Ok, qual a pergunta?')
         pergunta = Ouvir()
+      
         if pergunta:
             Falar('Pergunta gravada. Qual a resposta?')
             resposta = Ouvir()
+           
             if resposta:
                 await ensinar_luna(pergunta, resposta)
+           
             else:
                 Falar('Não consegui gravar a resposta.')
         else:
@@ -183,19 +192,40 @@ async def executar_comando(comando):
             Falar('Não estamos no horário de bom dia, mas estou aqui para te ajudar.')
 
     elif 'horas são' in comando:
+        
         horas = datetime.datetime.now().strftime('%H:%M')
         Falar("Agora são " + horas)
     
     elif 'me diga sobre' in comando or 'me fale sobre' in comando:
+       
         sobre = comando.replace('me diga sobre', '').replace('me fale sobre', '').strip()
+       
         wikipedia.set_lang('pt')
+       
         try:
             Falar("Procurando sobre " + sobre)
+            
             resposta = wikipedia.summary(sobre, sentences=2)
+            
             Falar(resposta)
+      
         except wikipedia.exceptions.DisambiguationError:
             Falar("A pesquisa retornou múltiplas opções. Por favor, seja mais específico.")
     
+    elif 'notícias de' in comando:
+       
+        noticias = comando.replace('notícias de', '').strip()
+        Falar('Procurando por notícias de ' + noticias)
+        
+        news = await news_api(noticias)  
+      
+        for artigo in news['articles'][:2]:  
+         
+            Falar(f"Título: {artigo['title']}")
+           
+            Falar(f"{artigo['description']}\n")
+
+
     elif 'abra o' in comando:
         site = comando.replace('abra o', '').strip()
         await sites(site)
@@ -207,31 +237,29 @@ async def executar_comando(comando):
    
     elif 'qual a temperatura em' in comando:
         cidade = comando.replace('qual a temperatura em', '').strip()
+        
         Falar('Obtendo informações do clima em ' + cidade)
+       
         try:
             observacao = mgr.weather_at_place(cidade)
             clima = observacao.weather
             temperatura = clima.temperature('celsius')['temp']
             descricao = traduzir_clima(clima.detailed_status)
+          
             Falar(f'Em {cidade} a temperatura é {temperatura:.1f}°C e o tempo está {descricao}.')
+       
         except pyowm.commons.exceptions.NotFoundError:
             Falar(f"Não consegui encontrar informações climáticas para {cidade}.")
   
     elif 'procure por' in comando:
+        
         pesquisa = comando.replace('procure por', '').strip()
+       
         Falar('Procurando no Google por ' + pesquisa)
+       
         threading.Thread(target=kit.search, args=(pesquisa,)).start() 
 
-    elif 'notícias de hoje' in comando:
-        Falar('Obtendo as últimas notícias...')
-        url = f'https://newsapi.org/v2/top-headlines?country=br&apiKey={senha_api_news}'
-        response = requests.get(url)
-        noticias = response.json()
-        if noticias['status'] == 'ok':
-            for i, noticia in enumerate(noticias['articles'][:5], start=1):
-                Falar(f"Notícia {i}: {noticia['title']}")
-        else:
-            Falar('Não consegui obter as notícias no momento.')
+    
    
     elif 'desligue o microfone' in comando or 'fique em silêncio' in comando:
         silencio = True
@@ -250,7 +278,8 @@ async def executar_comando(comando):
             Falar("Não consegui entender o nome da pasta.")
    
     else:
-        Falar("Desculpe, não entendi o comando. Você pode repetir?")
+        Falar("Não sei vou falar com meu amigo chatgpt. ")
+        await api_chatGpt(comando)
 
 async def obter_jogos_ao_vivo():
     global jogos_ao_vivo
@@ -316,6 +345,36 @@ async def obter_jogos_hoje():
             Falar("Não há jogos programados para hoje.")
     else:
         Falar("Não consegui obter os jogos de hoje no momento.")
+        
+async def news_api(termo_pesquisa):
+    url = f'https://newsapi.org/v2/everything?q={termo_pesquisa}&apiKey={senha_api_news}'
+    resposta = requests.get(url)
+    return resposta.json()  
+
+async def api_chatGpt(texto_falado):
+    texto = texto_falado.strip()
+
+    if not texto:
+        Falar("Desculpe, você não me disse nada para procurar.")
+        return
+
+    openai.api_key = senha_api_chatgpt2
+
+    try:
+        response = await openai.ChatCompletion.acreate(
+            model='gpt-3.5-turbo',
+            messages=[{'role': 'user', 'content': texto}]
+        )
+        chat_resposta = response.choices[0].message['content']
+        Falar(chat_resposta)
+    except openai.OpenAIError as e:
+        Falar("Houve um erro ao se conectar com o ChatGPT. Tente novamente mais tarde.")
+        print(f"Erro na API do OpenAI: {e}")
+    except Exception as e:
+        Falar("Ocorreu um erro inesperado ao buscar a resposta.")
+        print(f"Erro inesperado: {e}")
+
+
 
 async def main():
     while True:
