@@ -530,7 +530,7 @@ async def api_gemini(texto_falado):
    
     try:
         genai.configure(api_key=senha_api_gemini)
-        model = genai.GenerativeModel("gemini-pro")
+        model = genai.GenerativeModel("gemini-2.0-flash")
    
         gemini_resposta = model.generate_content(texto)
         
